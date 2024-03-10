@@ -1,0 +1,86 @@
+data_loader:
+  args:
+    batch_size: 6
+    is_dynamic: true
+    n_workers: 4
+    pin_memory: true
+    reward_field: reward
+    root_dir: ../data/preprocessed/arxiv
+    transformer_name: bert
+    use_covariates: false
+    use_tmp_covariates: false
+    validation_batch_size: 6
+  module: supervisedllm.data.dataloaders
+  name: TopicDataLoader
+distributed: false
+gpus:
+- '0'
+model:
+  args:
+    backbone_name: bert
+    cov_emb_dim: 50
+    cov_layers_dim:
+    - 10
+    - 10
+    covariates_dim: 0
+    dropout: 0.1
+    output_dim: 1
+    output_layers_dim:
+    - 32
+    - 32
+    output_transformation: sigmoid
+    train_backbone: false
+  module: supervisedllm.models_.baseline_models
+  name: TextSequenceClassifier
+name: bert_arxiv
+num_runs: 1
+num_workers: 0
+optimizer:
+  args:
+    lr: 0.001
+  gradient_norm_clipping: 1.0
+  min_lr_rate: 1e-14
+  module: torch.optim
+  name: SGD
+seed: 1
+trainer:
+  args:
+    bm_metric: accuracy
+    eval_test: false
+    lr_schedulers:
+    - optimizer:
+        args:
+          gamma: 0.2
+          step_size: 3
+        counter: 1
+        module: torch.optim.lr_scheduler
+        name: StepLR
+    save_after_epoch: 1
+    schedulers:
+    - args:
+        decay_rate: 0.0025
+        max_steps: 5000
+        max_value: 1.0
+      label: beta_scheduler
+      module: supervisedllm.utils.param_scheduler
+      name: ExponentialScheduler
+  epochs: 18
+  logging:
+    formatters:
+      simple: '%(levelname)s %(asctime)s %(message)s'
+      verbose: '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+    logged_test_stats:
+    - loss
+    - accuracy
+    logged_train_stats:
+    - loss
+    - accuracy
+    logged_val_stats:
+    - loss
+    - accuracy
+    logging_dir: ./results/logging/raw/
+    tensorboard_dir: ./results/logging/tensorboard/
+  module: supervisedllm.trainer
+  name: BaseTrainingProcedure
+  save_dir: ./results/saved/
+world_size: 1

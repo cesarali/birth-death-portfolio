@@ -1,0 +1,39 @@
+
+#===============================================================================
+MertonJumpsPoissonCovariance
+#===============================================================================
+
+model_param  = {"jump_size_scale_prior": 1.,
+              "jump_size_a": 0.5,
+              "jump_size_b": 1.,
+              "jump_arrival_alpha": .5,
+              "jump_arrival_beta": .5,
+              "returns_mean_a": 1.,
+              "returns_mean_b": 1.,
+              "diffusion_covariance_normalization":0.5,
+              "number_of_processes": number_of_processes,
+              "number_of_realizations": number_of_realizations,
+              "model_path": os.path.join(project_path, 'results')}
+
+data_loader = {"arrivals_intensity": arrivals_intensity.item(),
+               "arrivals_indicator": arrivals_indicator,
+               "jump_mean": jump_mean,
+               "jump_covariance": jump_covariance,
+               "jump_size": jumps_size,
+               "diffusive_log_returns": diffusive_log_returns,
+               "log_returns": log_returns,
+               "diffusion_covariance":diffusion_covariance,
+               "expected_returns": expected_return}
+
+
+monte_carlo_parameters = {"expected_returns":expected_returns,
+                          "diffusion_covariance":diffusion_covariance,
+                          "arrivals_indicator": arrivals_indicator,
+                          "arrivals_intensity": arrivals_intensity,
+                          "jumps_size": jumps_size,
+                          "jumps_mean": jump_mean,
+                          "jumps_covariance": jump_covariance}
+
+#===============================================================================
+
+#===============================================================================

@@ -1,5 +1,5 @@
 import torch
-from deep_fields.data.crypto.datasets import EcosystemDataset
+from bdp.data.crypto.datasets import EcosystemDataset
 from datetime import datetime
 
 import os
@@ -16,10 +16,10 @@ from collections import namedtuple
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
-from deep_fields.models.crypto.birth_stats import top_and_birth
-from deep_fields.data.crypto.create_dataset_files import create_merged_dataframe
-from deep_fields.data.crypto.datasets import EcosystemDataset, PortfolioDataset, pmv_nametupled, pmv_nametupled_full
-from deep_fields.data.crypto.data_basics import top_from_collection
+from bdp.models_.crypto.birth_stats import top_and_birth
+from bdp.data.crypto.create_dataset_files import create_merged_dataframe
+from bdp.data.crypto.datasets import EcosystemDataset, PortfolioDataset, pmv_nametupled, pmv_nametupled_full
+from bdp.data.crypto.data_basics import top_from_collection
 
 sampler = torch.utils.data.RandomSampler
 DistributedSampler = torch.utils.data.distributed.DistributedSampler
@@ -140,7 +140,7 @@ class CryptoDataLoader(ADataLoader):
         :param top:
         :return:
         """
-        from deep_fields import data_path
+        from bdp import data_path
         crypto_folder = os.path.join(data_path, "raw", "crypto")
         data_folder = os.path.join(crypto_folder, date)
 

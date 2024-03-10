@@ -1,0 +1,12 @@
+numpy
+scipy
+pandas
+tqdm
+click
+ipython
+matplotlib
+scikit-learn
+beautifulsoup4
+jax
+gpytorch
+torchsde

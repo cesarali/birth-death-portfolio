@@ -1,0 +1,31 @@
+The project consist of 4 main parts:
+
+0. Data Download
+1. Data Loader
+2. Predictor
+3. Portfolio
+
+The predictor is essentially built using a TCN as an encoder, thereby ensuring some form
+of non stasionarity and ideally a Neural SDEs as Infinite-Dimensional GANs as a decoder, such
+that we have a non parametric estimation of the diffussion matrix.
+
+#========================
+# 0. Data Download
+
+#========================
+# 1. Data Loader
+
+#========================
+# 2. Predictor
+
+Do we make the prediction in portfolios?
+(Obtaining a non parametric full estimation for the diffussion matrix)
+
+How good is the predictor?
+
+#========================
+# 0. Portfolio
+
+
+
+

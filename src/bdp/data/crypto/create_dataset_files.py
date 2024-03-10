@@ -9,7 +9,7 @@ import pymongo
 import random
 
 from datetime import datetime,timedelta
-from deep_fields.data.utils import divide_data
+from bdp.data.utils import divide_data
 
 def read_and_fix(data_folder,coin_file_name="pinkcoin_full.csv",span="full"):
     """

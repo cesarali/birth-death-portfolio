@@ -1,0 +1,32 @@
+#========================
+#  GENERAL PROJECT
+
+Write a paper?
+Any reasonable trivial estimation of Value at Risk?
+Can we define a path forward as a library
+
+** Minimum path forward **
+
+Can you select the portfolio with just the Seq2NeuralSDE predictor?
+BUY
+
+#========================
+# 0. Data Download
+
+a. Check that this is still working.
+b. Download new data
+
+#========================
+# 1. Data Loader
+
+
+#========================
+# 2. Predictor
+
+a. Do we make the prediction in portfolios?
+(Obtaining a non parametric full estimation for the diffusion matrix)
+
+b. How good is the predictor?
+
+#========================
+# 0. Portfolio
