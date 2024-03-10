@@ -16,7 +16,7 @@ from collections import namedtuple
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
-from bdp.models_.crypto.birth_stats import top_and_birth
+from bdp.models.crypto.birth_stats import top_and_birth
 from bdp.data.crypto.create_dataset_files import create_merged_dataframe
 from bdp.data.crypto.datasets import EcosystemDataset, PortfolioDataset, pmv_nametupled, pmv_nametupled_full
 from bdp.data.crypto.data_basics import top_from_collection

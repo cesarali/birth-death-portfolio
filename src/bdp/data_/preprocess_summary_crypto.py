@@ -1,4 +1,5 @@
 import os
+import sys
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
@@ -78,7 +79,12 @@ def process_file(file_path, filename):
     
     return file_summary
 
-def all_coins_summary(folder_path):
+def ensure_date_time(df):
+    df['date_min_date'] = pd.to_datetime(df['date_min_date'],format="mixed")
+    df['date_max_date'] = pd.to_datetime(df['date_max_date'],format="mixed")
+    return df
+
+def all_coins_summary(folder_path,filetype="full",redo=False):
     """
     We read all .csv files containing a coin and create a pandas data frame that summarizes how many entries 
     as well as max and min values attained for each coin in terms of date, market cap, volume, and price.
@@ -94,10 +100,20 @@ def all_coins_summary(folder_path):
     if isinstance(folder_path,str):
         folder_path = Path(folder_path)
     summary_path = folder_path / "files_summary.csv"
-    if not os.path.exists(summary_path):
+
+    if not os.path.exists(summary_path) or redo:
+        files_to_preprocess = []
+        for filename in os.listdir(folder_path):
+            thisfiletype = filename[-(len(filetype)+4):-4]
+            if thisfiletype == filetype:
+                files_to_preprocess.append(filename)
+        if len(files_to_preprocess) == 0:
+            print("No files to preprocess")
+            raise Exception
+
         files_list = []
         # Iterate over each file in the folder and process it
-        for filename in tqdm(os.listdir(folder_path)):
+        for filename in tqdm(files_to_preprocess):
             if filename.endswith('.csv'):  # Ensure the file is a CSV
                 file_path = os.path.join(folder_path, filename)
                 try:
@@ -112,14 +128,21 @@ def all_coins_summary(folder_path):
         save_dataframe(summary_df, summary_path, format='csv')
     else:
         summary_df = load_dataframe(summary_path, format='csv')
+        if len(summary_df) == 0:
+            print("Empty Summary")
+            raise Exception
 
+    # ensure datetime
+    summary_df = ensure_date_time(summary_df)
     return summary_df
 
 if __name__=="__main__":
     from pathlib import Path
     data_path_string = r"C:\Users\cesar\Desktop\Projects\BirthDeathPortafolioChoice\Codes\birth-death-portfolio\data\raw"
     path_to_data_date = Path(data_path_string) / '2021-10-24'
+    path_to_data_date = Path(data_path_string) / '2021-06-08'
+    path_to_data_date = Path(data_path_string) / '2021-05-10'
 
-
+    
     summary_pd = all_coins_summary(path_to_data_date)
     pprint(summary_pd.head())

@@ -6,9 +6,9 @@ import pandas as pd
 import torchcde
 from datetime import datetime
 from bdp.data.crypto.dataloaders import CryptoDataLoader, ADataLoader
-from bdp.models_.sdes.neural_sde import Generator, Discriminator
-from bdp.models_.sdes.neural_sde import gradient_penalty
-from bdp.models_.utils.utils_ts import unfold_steps_ahead
+from bdp.models.sdes.neural_sde import Generator, Discriminator
+from bdp.models.sdes.neural_sde import gradient_penalty
+from bdp.models.utils.utils_ts import unfold_steps_ahead
 
 import os
 import sys
@@ -21,20 +21,20 @@ from tqdm import tqdm
 from torch.optim import Adam
 from bdp import project_path
 from bdp.utils.weird_functions import positive_parameter
-from bdp.models_.basic_utils import set_debugging_scheme, generate_training_message
+from bdp.models.basic_utils import set_debugging_scheme, generate_training_message
 
 from bdp.data.m5.dataloaders import covariates_info
-from bdp.models_.abstract_models import DeepBayesianModel
-from bdp.models_.deep_architectures.tcn import TemporalConvNet
+from bdp.models.abstract_models import DeepBayesianModel
+from bdp.models.deep_architectures.tcn import TemporalConvNet
 import torch.optim.swa_utils as swa_utils
 
 from bdp.data.m5.dataloaders import M5_BLOCK
 from torch.utils.data import DataLoader
 
-from bdp.models_.deep_architectures.deep_nets import MLP
+from bdp.models.deep_architectures.deep_nets import MLP
 from torch.distributions import Poisson, Normal
-from bdp.models_.m5 import embeddings
-from bdp.models_.m5.embeddings import create_embeddings
+from bdp.models.m5 import embeddings
+from bdp.models.m5.embeddings import create_embeddings
 
 from bdp.data.crypto.create_dataset_files import create_merged_dataframe
 
