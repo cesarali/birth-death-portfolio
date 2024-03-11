@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch.distributions import Gamma,Poisson,Uniform
-from deep_fields.utils.debugging import timeit
+from bdp.utils.debugging import timeit
 
 #@timeit
 def new_kernel(locations, location_index, new_location, number_of_arrivals, K, kernel):

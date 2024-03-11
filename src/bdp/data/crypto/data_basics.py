@@ -3,13 +3,13 @@ import torch
 import pymongo
 import numpy as np
 import pandas as pd
-from deep_fields import data_path
+from bdp import data_path
 from matplotlib import pyplot as plt
-from deep_fields.data.crypto.create_dataset_files import create_merged_dataframe
+from bdp.data.crypto.create_dataset_files import create_merged_dataframe
 
 
 def top_from_collection(date,max_size):
-    from deep_fields import data_path
+    from bdp import data_path
     client = pymongo.MongoClient()
     db = client["crypto"]
     collection = db['birth_{0}'.format(date)]

@@ -8,7 +8,7 @@ from torch import matmul as m
 from torch import einsum
 
 from torch.distributions import MultivariateNormal
-from deep_fields.models.random_fields.blocks_utils import obtain_blocks, obtain_location_index_to_realization
+from bdp.models.random_fields.blocks_utils import obtain_blocks, obtain_location_index_to_realization
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 PI = np.pi

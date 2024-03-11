@@ -6,14 +6,14 @@ import pandas as pd
 from datetime import datetime
 from matplotlib import pyplot as plt
 
-from deep_fields import models_path
+from bdp import models_path
 
 crypto_plots_dir = os.path.join(models_path,"crypto_plots")
 if not os.path.isdir(crypto_plots_dir):
     os.makedirs(crypto_plots_dir)
 
-from deep_fields import data_path
-from deep_fields.data.crypto.create_dataset_files import create_merged_dataframe
+from bdp import data_path
+from bdp.data.crypto.create_dataset_files import create_merged_dataframe
 
 def coins_in_a_window(date0,datef,collection,survival=True):
     if not survival:

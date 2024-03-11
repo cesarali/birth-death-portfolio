@@ -14,15 +14,15 @@ from torch.distributions import Bernoulli, Beta, Poisson
 from torch import einsum
 
 from scipy.stats import wishart as Wishart
-from deep_fields.utils.debugging import timeit
+from bdp.utils.debugging import timeit
 from scipy.stats import invwishart as Invwishart
-from deep_fields.models.random_fields.utils import new_kernel
-from deep_fields.models.abstract_models import DeepBayesianModel
-from deep_fields.data.crypto.dataloaders import CryptoDataLoader, ADataLoader
-from deep_fields.models.gaussian_processes.gaussian_processes import multivariate_normal, white_noise_kernel
+from bdp.models.random_fields.utils import new_kernel
+from bdp.models.abstract_models import DeepBayesianModel
+from bdp.data.crypto.dataloaders import CryptoDataLoader, ADataLoader
+from bdp.models.gaussian_processes.gaussian_processes import multivariate_normal, white_noise_kernel
 
 from torch import matmul as m
-from deep_fields import project_path
+from bdp import project_path
 from matplotlib import pyplot as plt
 from scipy.stats import multivariate_normal
 from scipy.stats import invwishart, bernoulli
@@ -32,6 +32,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 EPSILON = 1e-5
 
 from bovy_mcmc.elliptical_slice import elliptical_slice
+
 class PoissonCovariance(DeepBayesianModel):
     """
     # MCMC type of algorithm for a simple model of covariance matrix defined by latent arrivals
@@ -227,6 +228,7 @@ class PoissonCovariance(DeepBayesianModel):
                     monte_carlo_parameters = self.gibbs_locations(data_loader, location_index, monte_carlo_parameters)
 
         return monte_carlo_parameters
+    
 class MertonJumpsPoissonCovariance(DeepBayesianModel):
     """
     # MCMC type of algorithm for a simple model of covariance matrix defined by latent arrivals
@@ -839,6 +841,7 @@ class MertonJumpsPoissonCovariance(DeepBayesianModel):
             json.dump(metrics_dict, f)
             f.write("\n")
             f.flush()
+
 class MertonBirthPoissonCovariance(DeepBayesianModel):
     """
     Here we learn a market growth process essentially
@@ -1231,7 +1234,7 @@ class MertonBirthPoissonCovariance(DeepBayesianModel):
         return current_log_probability
 
 if __name__ == "__main__":
-    from deep_fields import data_path
+    from bdp import data_path
     #===================================================================
     # COLLECT REAL DATA
     #===================================================================
@@ -1292,11 +1295,14 @@ if __name__ == "__main__":
     # MERTON JUMPS
     #===================================================================
     model_param = MertonJumpsPoissonCovariance.get_parameters()
-    new_sample = False
-    from deep_fields import data_path
+    new_sample = True
+    from bdp import data_path
+    from pathlib import Path
 
-    data_dir = os.path.join(data_path,"raw\merton_poisson_covariance")
-    my_data_path = os.path.join(data_dir, "merton_jump_simulation_.tr")
+    data_dir = Path(data_path) /"raw" / "merton_poisson_covariance"
+    #data_dir = os.path.join(data_path,"raw\merton_poisson_covariance")
+    #my_data_path = os.path.join(data_dir, "merton_jump_simulation_.tr")
+    my_data_path = data_dir / "merton_jump_simulation_.tr"
 
     if new_sample:
         model_param.update({"jump_size_a": 5.})
@@ -1311,10 +1317,11 @@ if __name__ == "__main__":
         data_loader = mjpc_s.sample()
         data_ = {"data_loader":data_loader,"model_param":model_param}
         torch.save(data_,my_data_path)
-
-    data_ = torch.load(my_data_path)
-    data_loader = data_["data_loader"]
-    model_param = data_["model_param"]
+    else:
+        raise Exception("New Data is Not ready")
+        #data_ = torch.load(my_data_path)
+        #data_loader = data_["data_loader"]
+        #model_param = data_["model_param"]
     #========================================================================
     # inference from simulated date
     inference_param = MertonJumpsPoissonCovariance.get_inference_parameters()

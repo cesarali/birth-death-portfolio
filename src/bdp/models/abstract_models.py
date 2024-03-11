@@ -9,8 +9,7 @@ from typing import Dict, Union
 
 import numpy as np
 import torch
-from deep_fields.data.topic_models.dataloaders import ADataLoader
-from deep_fields.models.basic_utils import set_cuda, all_metrics_to_floats, dict_mean
+from bdp.models.basic_utils import set_cuda, all_metrics_to_floats, dict_mean
 from torch.optim import SGD, Adam, AdamW
 from torch.optim.adadelta import Adadelta
 from torch.optim.adagrad import Adagrad
@@ -18,6 +17,117 @@ from torch.optim.asgd import ASGD
 from torch.optim.rmsprop import RMSprop
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+
+from abc import ABC
+from torch.utils.data.dataloader import DataLoader
+
+
+class ADataLoader(ABC):
+    _train_iter: DataLoader
+    _valid_iter: DataLoader
+    _test_iter: DataLoader
+    _predict_iter: DataLoader
+
+    def __init__(self, device, rank: int = 0, world_size: int = -1, **kwargs):
+        self.dataset_kwargs = kwargs
+        self.device = device
+        self.batch_size = kwargs.get('batch_size')
+        self.path_to_vectors = kwargs.pop('path_to_vectors', None)
+        self.emb_dim = kwargs.pop('emb_dim', None)
+        self.world_size = world_size
+        self.rank = rank
+
+    @property
+    def train(self):
+        return self._train_iter
+
+    @property
+    def validate(self):
+        return self._valid_iter
+
+    @property
+    def test(self):
+        return self._test_iter
+
+    @property
+    def predict(self):
+        return self._predict_iter
+
+    @property
+    def n_train_batches(self):
+        return len(self.train.dataset) // self.batch_size // abs(self.world_size)
+
+    @property
+    def n_test_batches(self):
+        return len(self.test.dataset) // self.batch_size // abs(self.world_size)
+
+    @property
+    def n_validate_batches(self):
+        return len(self.validate.dataset) // self.batch_size // abs(self.world_size)
+
+    @property
+    def train_set_size(self):
+        return len(self.train.dataset)
+
+    @property
+    def validation_set_size(self):
+        return len(self.validate.dataset)
+
+    @property
+    def test_set_size(self):
+        return len(self.test.dataset)
+
+    @property
+    def prediction_set_size(self):
+        return len(self.predict.dataset)
+
+    @property
+    def number_of_documents(self):
+        try:
+            return self.train_set_size + self.validation_set_size + self.prediction_set_size + self.test_set_size
+        except:
+            return self.train_set_size + self.validation_set_size + self.test_set_size
+
+    @property
+    def vocab(self):
+        return self.train.dataset.vocab
+
+    @property
+    def vocabulary_dim(self):
+        voc_l = len(self.vocab.vocab)
+        for special in ['<pad>', '<sos>', '<eos>', '<unk>']:
+            if special in self.vocab.stoi:
+                voc_l -= 1
+        return voc_l
+
+    @property
+    def max_doc_len(self):
+        raise AttributeError('max_doc_len is only defined for bag of sentences dataloaders!')
+
+    @property
+    def max_sent_len(self):
+        return len(self.train.dataset.data['text'][0][0])
+
+    @property
+    def num_training_steps(self):
+        return len(set(self.train.dataset.data['time']))
+
+    @property
+    def num_prediction_steps(self):
+        return len(set(self.predict.dataset.data['time']))
+
+    @property
+    def training_times(self):
+        return list(set(self.train.dataset.data['time']))
+
+    @property
+    def prediction_times(self):
+        return list(set(self.predict.dataset.data['time']))
+
+    @property
+    def prediction_count_per_year(self):
+        return len(self.predict.dataset)
+
 
 
 class DeepBayesianModel(torch.nn.Module):

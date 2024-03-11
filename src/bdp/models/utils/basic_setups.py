@@ -1,7 +1,8 @@
 import os
 import time
 import shutil
-from deep_fields import models_path
+from bdp import models_path
+
 from torch.utils.tensorboard import SummaryWriter
 
 def create_dir_and_writer(model_name="particles_schrodinger",experiments_class="ou",model_identifier=None,delete=False):
