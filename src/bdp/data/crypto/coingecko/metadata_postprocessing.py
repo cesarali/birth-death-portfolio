@@ -2,6 +2,7 @@ import pandas as pd
 from bdp.data.crypto.coingecko.coingecko_dataclasses import PriceChangeData
 from typing import List
 from typing import Union, Dict
+
 def price_change_data_to_dataframe(data_list: List[PriceChangeData] | Dict[str,PriceChangeData]) -> pd.DataFrame:
     if isinstance(data_list,dict):
         data_list = list(data_list.values())

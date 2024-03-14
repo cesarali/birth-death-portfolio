@@ -197,6 +197,7 @@ class metadataLists:
         self.num_not_uniswap_ids = len(self.not_uniswap_ids)
         self.num_total_downloads = self.num_uniswap_ids_ready + self.num_not_uniswap_ids
         self.include_symbols_and_name()
+        self.list_into_dicts()
 
     def save_lists(self,redo=True):
         if redo:

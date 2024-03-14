@@ -8,12 +8,21 @@ from datetime import datetime,timedelta
 from dataclasses import dataclass
 
 from bdp.data.crypto.coingecko.downloads import (
+    get_df_timeserieses,
+    metadataLists
+)
+
+from typing import List,Dict
+
+from bdp.data.crypto.coingecko.downloads import (
     metadataLists
 )
 
 from bdp.data.crypto.coingecko.coingecko_dataclasses import PriceChangeData
 
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
+
+from bdp.data.crypto.coingecko.metadata_postprocessing import price_change_data_to_dataframe
 
 def read_csv(ts_coin_pathdir):
     ts = pd.read_csv(ts_coin_pathdir, index_col=0)  # Use the first column as the index
@@ -24,6 +33,8 @@ def read_csv(ts_coin_pathdir):
 from dataclasses import dataclass
 from typing import Optional
 from pandas import Timestamp
+
+from dataclasses import dataclass,asdict
 
 @dataclass
 class PredictionSummary:
@@ -85,8 +96,31 @@ class timeseriesMetadata:
     max_hours:int= None
     num_price_values:int = None
     are_values_same:bool = None
-    coin_id:str = None
     prediction_summary:PredictionSummary = None
+
+@dataclass
+class TimeSeriesTorchForTraining:
+    time_series_ids : List[str] = None
+    lengths_past: List[int] = None
+    lengths_prediction: List[int] = None
+
+    covariates: torch.Tensor = None
+
+    past_padded_sequences: torch.Tensor = None
+    past_packed_sequences: torch.Tensor = None
+    prediction_padded_sequences: torch.Tensor = None
+    prediction_packed_sequences: torch.Tensor = None
+
+    prediction_summary: torch.Tensor = None
+
+def prediction_summary_to_tensor(instance: PredictionSummary) -> torch.tensor:
+    # Convert dataclass instance to dictionary
+    instance_dict = asdict(instance)
+    # Filter out non-float values
+    float_values = [value for value in instance_dict.values() if isinstance(value, float)]
+    # Convert list of float values to a numpy array
+    float_array = torch.tensor(float_values)
+    return float_array
 
 def summarize_prediction_head_dataframe(df,past_head=None):
     summary = {}
@@ -137,7 +171,7 @@ def elapsed_hours(ts):
     ts['elapsed_hours'] = np.ceil(elapsed_hours.values).astype(int)
     return ts
 
-def preprocess_dataframe(ts,coin_metadata:PriceChangeData)->timeseriesMetadata:
+def preprocess_timeseries_dataframe(ts,coin_id:str)->timeseriesMetadata:
     """
     creates a timeseries metadata object that prepares the time series for statistical assesment
     and creation of tensor objects for machine learning NOTE: normalization is not done 
@@ -161,7 +195,7 @@ def preprocess_dataframe(ts,coin_metadata:PriceChangeData)->timeseriesMetadata:
     num_volume_values:int = np.isreal(ts['total_volumes'].values).sum()
     are_values_same = (num_price_values == num_market_cap_values == num_volume_values)
 
-    tsmd = timeseriesMetadata(id=coin_metadata.id,
+    tsmd = timeseriesMetadata(id=coin_id,
                               ts=ts,
                               past_body=past_body,
                               prediction_head=prediction_head,
@@ -174,56 +208,113 @@ def preprocess_dataframe(ts,coin_metadata:PriceChangeData)->timeseriesMetadata:
                               prediction_summary=prediction_head_summary)
     return tsmd
 
+def valid_values_for_dataframe(values):
+    if isinstance(values,pd.DataFrame):
+        return False
+    if isinstance(values,PredictionSummary):
+        return False
+    return True
+    
+def timeseries_metadata_to_dataframe(data_list: List[timeseriesMetadata] | Dict[str,timeseriesMetadata]) -> pd.DataFrame:
+    """
+    we create a data frame with the statistics of all the time series metadata
+    """
+    if isinstance(data_list,dict):
+        data_list = list(data_list.values())
+    # Convert the list of PriceChangeData instances to a list of dictionaries.
+    # Each dictionary represents the attributes of a PriceChangeData instance.
+    data_dicts = []
+    for data_instance in data_list:
+         vars_tsmd = {k:v for k,v in vars(data_instance).items() if valid_values_for_dataframe(v)}
+         vars_tsmd.update(vars(data_instance.prediction_summary))
+         data_dicts.append(vars_tsmd)
+    # Create a pandas DataFrame from the list of dictionaries.
+    df = pd.DataFrame(data_dicts)
+    return df
 
+def timeseries_and_metadata(metadata_lists:List[PriceChangeData],uniswap_time_series:pd.DataFrame)->Dict[str,timeseriesMetadata]:
+    """
+    we create a dictionary with all the coins timeseries stored with its metadata as a dataclass object
+    """
+    timeseries_and_metadata = {}
+    for coin_id,coin_metadata in metadata_lists.uniswap_coins.items():
+        try:
+            coin_df = uniswap_time_series[coin_id]
+            tsmd  = preprocess_timeseries_dataframe(coin_df,coin_id)
+            timeseries_and_metadata[coin_id] = tsmd
+        except:
+            print(sys.exc_info())
+    return timeseries_and_metadata
 
-def get_timeseries_as_torch(metadata_lists):
+def get_timeseries_as_torch(timeseries_and_metadata,metadata_lists:metadataLists):
     """
     returns
     -------
     padded_sequences
     """
-    lengths = []
+    lengths_past = []
+    lengths_prediction = []
     time_series_ids = []
-    tensor_series_list = []
-    for coin in tqdm(metadata_lists.uniswap_coins):
-        ts_filename = coin.id + ".csv"
-        ts_coin_pathdir = metadata_lists.uniswap_coins_date_pathdir / ts_filename
-        ts = read_csv(ts_coin_pathdir)
-        tsmd = preprocess_dataframe(ts,coin.id)
+    past_tensor_list = []
+    prediction_tensor_list = []
 
+    covariates_list = []
+    prediction_summary_list = []
+    tsmd:timeseriesMetadata
+
+    filter_none = lambda x: 3 if x is None else x
+
+    for coin_id,tsmd in tqdm(timeseries_and_metadata.items()):
         if tsmd.num_price_values > 200:
-            time_series_ids.append(coin.id)
-            tensor_series_list.append(torch.tensor(tsmd.ts.values))
-            lengths.append(tsmd.ts.values.shape[0])
+            #covariates
+            coin_metadata:PriceChangeData
+            coin_metadata = metadata_lists.uniswap_coins[coin_id]
+
+            covariates_list.append(torch.tensor([filter_none(coin_metadata.watchlist_portfolio_users),
+                                                 filter_none(coin_metadata.sentiment_votes_up_percentage)]))
+            
+
+            time_series_ids.append(coin_id)
+            past_tensor_list.append(torch.tensor(tsmd.past_body.values))
+            prediction_tensor_list.append(torch.tensor(tsmd.prediction_head.values))
+            lengths_past.append(tsmd.past_body.shape[0])
+            lengths_prediction.append(tsmd.prediction_head.shape[0])
+
+            #prediction summary
+            prediction_summary_list.append(prediction_summary_to_tensor(tsmd.prediction_summary))
+
 
     # lengths need to be in decreasing order if enforcing_sorted=True or use enforce_sorted=False
-    padded_sequences = pad_sequence(tensor_series_list, batch_first=True, padding_value=0)
+    past_padded_sequences = pad_sequence(past_tensor_list, batch_first=True, padding_value=0)
+    prediction_padded_sequences = pad_sequence(prediction_tensor_list, batch_first=True, padding_value=0)
+
     # Pack the padded sequences
     # lengths need to be in decreasing order if enforcing_sorted=True or use enforce_sorted=False
-    packed_sequences = pack_padded_sequence(padded_sequences, lengths=lengths, batch_first=True, enforce_sorted=False)
-    return lengths,padded_sequences,packed_sequences
+    past_packed_sequences = pack_padded_sequence(past_padded_sequences, lengths=lengths_past, batch_first=True, enforce_sorted=False)
+    prediction_packed_sequences = pack_padded_sequence(prediction_padded_sequences, lengths=lengths_prediction, batch_first=True, enforce_sorted=False)
 
+    prediction_summary_list = torch.vstack(prediction_summary_list)
+    covariates_list = torch.vstack(covariates_list)
 
-def stats_of_tsdm_objects(time_series_metadatas):
-    are_the_same = []
-    all_num_price_values = []
-    all_num_price_values_ = []
-    for tsmd in time_series_metadatas:
-        all_num_price_values.append((tsmd.num_price_values,tsmd.coin_id))
-        all_num_price_values_.append(tsmd.num_price_values)
-        are_the_same.append(tsmd.are_values_same)
-    all_num_price_values.sort()
-    all_num_price_values_ = np.asarray(all_num_price_values_)
-    are_the_same = np.asarray(are_the_same)
-    some_one_difference = (~are_the_same).sum()
-    return all_num_price_values,all_num_price_values_,some_one_difference
+    print(covariates_list.shape)
+
+    return  TimeSeriesTorchForTraining(time_series_ids=time_series_ids,
+                                       covariates=covariates_list,
+                                       lengths_past=lengths_past,
+                                       lengths_prediction=lengths_prediction,
+                                       past_padded_sequences=past_padded_sequences,
+                                       past_packed_sequences=past_packed_sequences,
+                                       prediction_padded_sequences=prediction_padded_sequences,
+                                       prediction_packed_sequences=prediction_packed_sequences,
+                                       prediction_summary=prediction_summary_list)
 
 if __name__=="__main__":
-    metadata_lists:metadataLists = metadataLists()
-    print(metadata_lists.num_uniswap_ids_ready)
-
-    lengths,padded_sequences,packed_sequences = get_timeseries_as_torch(metadata_lists)
-
-    print(lengths)
-    print(padded_sequences.shape)
+    date_string = "2024-03-13"
+    metadata_lists = metadataLists(date_string=date_string) # all metadata objects from files
     
+    uniswap_metadata_df = price_change_data_to_dataframe(metadata_lists.uniswap_coins) # all metadata of coins
+    uniswap_time_series,missing_time_series = get_df_timeserieses(metadata_lists) # get time serieses df
+    timeseries_and_metadata = timeseries_and_metadata(metadata_lists,uniswap_time_series) # dict of all timeseries metadata with ts
+    timeseries_metadata_dataframe = timeseries_metadata_to_dataframe(timeseries_and_metadata) # dataframe of timseries metadata statistics
+    torch_data = get_timeseries_as_torch(timeseries_and_metadata,metadata_lists)
+    print(torch_data.prediction_padded_sequences.shape)
