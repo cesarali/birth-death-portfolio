@@ -2,8 +2,8 @@ import os
 import sys
 import pandas as pd
 from tqdm import tqdm
-from pprint import pprint
 from pathlib import Path
+from pprint import pprint
 
 def save_dataframe(df, filepath, format='csv'):
     """
@@ -143,6 +143,5 @@ if __name__=="__main__":
     path_to_data_date = Path(data_path_string) / '2021-06-08'
     path_to_data_date = Path(data_path_string) / '2021-05-10'
 
-    
     summary_pd = all_coins_summary(path_to_data_date)
     pprint(summary_pd.head())

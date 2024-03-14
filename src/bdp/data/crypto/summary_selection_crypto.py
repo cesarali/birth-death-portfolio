@@ -1,6 +1,6 @@
 import pandas as pd
 from pprint import pprint
-from bdp.data_.preprocess_summary_crypto import all_coins_summary
+from bdp.data.crypto.preprocess_summary_crypto import all_coins_summary
 
 def in_date_range(summary_pd,date0,datef,names_only=True):
     """
