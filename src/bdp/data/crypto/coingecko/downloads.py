@@ -161,6 +161,7 @@ class metadataLists:
     not_downloaded_file:Path = None
     not_uniswap_file:Path = None
     uniswap_coins_date_pathdir:Path = None
+    torch_pathdir:Path = None
     uniswap_ids_ready:List[str] = None
     not_uniswap_ids:List[str] = None
     num_total_downloads:int = 0
@@ -177,6 +178,8 @@ class metadataLists:
         self.uniswap_file = self.uniswap_coins_date_pathdir / f"uniswap_metadata_{self.date_string}.pck"
         self.not_downloaded_file = self.uniswap_coins_date_pathdir / f"not_downloaded_{self.date_string}.pck"
         self.not_uniswap_file = self.uniswap_coins_date_pathdir / f"not_uniswap_metadata_{self.date_string}.pck"
+        self.torch_pathdir = self.uniswap_coins_date_pathdir / "preprocess_data_torch.tr"
+
 
         if os.path.exists(self.uniswap_file):
             with open(self.uniswap_file,"rb") as file1:
@@ -330,4 +333,4 @@ if __name__ == "__main__":
     #metadata_list = download_all_uniswap_coins_metadata(trials=200,from_sorted=False)
     metadata_lists:metadataLists = metadataLists(date_string=date_string)
     #print(metadata_lists.num_total_downloads)
-    #get_df_timeserieses(metadata_lists)
+    get_df_timeserieses(metadata_lists)

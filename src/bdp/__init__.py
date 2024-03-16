@@ -4,4 +4,5 @@ base_path = Path(__file__).resolve().parent
 project_path = (base_path / ".." / "..").resolve()
 data_path = project_path / "data"
 test_resources_path = project_path / "tests" / "resources"
-models_path = project_path / 'results'
+results_path = project_path / 'results'
+config_path = project_path /'configs'

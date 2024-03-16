@@ -6,7 +6,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from bdp.models.crypto.predictors import CryptoSeq2Seq
-from bdp.models.crypto.portfolio_objectives import excess_return
+from bdp.models.crypto.portfolio_selection.portfolio_objectives import excess_return
 from bdp.data.crypto.dataloaders import CryptoDataLoader,PortfolioDataLoader
 from bdp import data_path
 

@@ -38,7 +38,6 @@ class PriceChangeData:
     market_cap: Optional[float] = None
     uniswap:Optional[bool] = False
 
-
 def obtain_tickers(data_tickers):
     bid_ask_spread_percentage = None
     uniswap = False

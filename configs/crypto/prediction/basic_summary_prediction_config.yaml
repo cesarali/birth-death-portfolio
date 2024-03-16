@@ -1,0 +1,43 @@
+ExperimentMetaData:
+  name: "Simple Prediction Model"
+  experiment_dir: null # if null then defined from name, type and identifier
+  experiment_name: SummaryPrediction
+  experiment_type: Basic
+  experiment_indentifier: null
+
+PredictionModel:
+  class_name: SummaryPredictionModel
+  PastEncoder:
+    class_name: LSTMModel
+    input_dim: 4
+    hidden_dim: 20
+    layer_num: 2
+    output_dim: 20 
+
+  PredictionHead:
+    class_name: MLPRegressionHead
+    input_dim: 20 # same as encoder output
+    hidden_dims: [50, 50]
+    output_dim: 1
+
+TrainingParameters:
+  learning_rate: 0.001
+  num_epochs: 100
+  debug: true
+
+  save_model_epochs: 2
+  save_model_metrics_stopping: false
+  save_model_metrics_warming: false
+  warm_up_best_model_epoch: 10
+  number_of_epochs: 100
+  save_model_test_stopping: true
+
+  metric_to_save:
+    - null
+
+DataLoaderParameters:
+  data_dir: C:\Users\cesar\Desktop\Projects\BirthDeathPortafolioChoice\Codes\birth-death-portfolio\data\raw\uniswap\2024-03-13\
+  batch_size: 64
+  shuffle: True
+  num_workers: 4
+  training_split: 0.8

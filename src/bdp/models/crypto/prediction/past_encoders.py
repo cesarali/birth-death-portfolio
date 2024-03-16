@@ -1,21 +1,11 @@
 import torch
-import torch.nn as nn
+from torch import nn
 
-from bdp.data.crypto.coingecko.downloads import (
-    get_df_timeserieses,
-    metadataLists
-)
+from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
-from bdp.data.crypto.coingecko.dataloaders import (
-    TimeSeriesTorchForTraining,
-)
-
-from bdp.data.crypto.coingecko.dataloaders import TimeSeriesDataLoader
-
-# Define your LSTM model
-class LSTModel(nn.Module):
-    def __init__(self, input_dim, hidden_dim, layer_num, output_dim):
-        super(LSTModel, self).__init__()
+class LSTMModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim, layer_num, output_dim,**kwargs):
+        super(LSTMModel, self).__init__()
         self.hidden_dim = hidden_dim
         self.layer_num = layer_num
 
@@ -37,9 +27,3 @@ class LSTModel(nn.Module):
         output = self.linear(hidden[-1])
         return output
     
-
-    if __name__=="__main__":
-        date_string = "2024-03-13"
-        metadata_lists:metadataLists = metadataLists(date_string=date_string) # all metadata objects from files
-        torch_data:TimeSeriesTorchForTraining
-        torch_data = torch.load(metadata_lists.torch_pathdir)
