@@ -38,3 +38,15 @@ class SummaryPredictionModel(nn.Module):
         # prediction
         output = self.prediction_head(past_encoding)
         return output
+    
+    def loss_criterion(self,output,target):
+        # Mask valid (non-nan) target values
+        mask = ~torch.isnan(target)
+    
+        # Apply the mask to select non-missing values in both output and target
+        output_valid = output[mask]
+        target_valid = target[mask]
+    
+        # Compute MSE loss on non-missing values
+        loss = (output_valid - target_valid).pow(2).mean()
+        return loss

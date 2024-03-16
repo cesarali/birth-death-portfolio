@@ -10,20 +10,23 @@ PredictionModel:
   PastEncoder:
     class_name: LSTMModel
     input_dim: 4
-    hidden_dim: 20
-    layer_num: 2
-    output_dim: 20 
+    hidden_dim: 10
+    layer_num: 1
+    output_dim: 4 
 
   PredictionHead:
     class_name: MLPRegressionHead
-    input_dim: 20 # same as encoder output
-    hidden_dims: [50, 50]
-    output_dim: 1
+    input_dim: 4 # same as encoder output
+    hidden_dims: [10, 10]
+    output_dim: 30
 
 TrainingParameters:
   learning_rate: 0.001
   num_epochs: 100
   debug: true
+
+  clip_grad: true
+  clip_max_norm: 10.
 
   save_model_epochs: 2
   save_model_metrics_stopping: false

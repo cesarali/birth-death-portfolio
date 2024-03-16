@@ -111,7 +111,8 @@ def prediction_summary_to_tensor(instance: PredictionSummary) -> torch.tensor:
     float_array = torch.tensor(float_values)
     return float_array
 
-def summarize_prediction_head_dataframe(df,past_head=None):
+def summarize_prediction_head_dataframe(df,past_body=None):
+    past_head = past_body.iloc[-1]
     summary = {}
     for column in df.columns:
         max_value = df[column].max()
@@ -180,8 +181,8 @@ def preprocess_timeseries_dataframe(ts,coin_id:str)->timeseriesMetadata:
 
     past_body = ts[ts.index < time_10_before]
     prediction_head = ts[time_10_before <= ts.index]
-    past_head = past_body.iloc[-1]
-    prediction_head_summary = summarize_prediction_head_dataframe(prediction_head,past_head)
+    
+    prediction_head_summary = summarize_prediction_head_dataframe(prediction_head,past_body)
     
     prediction_head_summary = PredictionSummary(**prediction_head_summary)
     

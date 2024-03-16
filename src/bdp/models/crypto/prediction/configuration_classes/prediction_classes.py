@@ -46,6 +46,9 @@ class TrainingParameters:
     number_of_epochs: int = 100
     save_model_test_stopping: bool = True
 
+    clip_grad:bool = True
+    clip_max_norm:float = 10.
+    
 @dataclass
 class DataLoaderParameters:
     data_dir: str

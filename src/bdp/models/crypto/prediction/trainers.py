@@ -38,7 +38,7 @@ class PredictionTrainer(Trainer):
         if isinstance(model.past_encoder,LSTMModel):
             self.pack_sentences = True
         # Loss function and optimizer
-        self.criterion = nn.MSELoss()
+        self.criterion = experiment.prediction_model.loss_criterion
         self.optimizer = optim.Adam(model.parameters(), lr=experiment.config.TrainingParameters.learning_rate)
 
     def preprocess_data(self, databatch):
@@ -75,12 +75,11 @@ class PredictionTrainer(Trainer):
         loss = self.criterion(output, y)  # Compute the loss
         
         loss.backward()  # Backward pass: compute gradient of the loss with respect to model parameters
+
+        if self.config.TrainingParameters.clip_grad:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), self.config.TrainingParameters.clip_max_norm)
+        
         self.optimizer.step()  # Perform a single optimization step (parameter update)
-
-        #if self.config.trainer.clip_grad:
-        #    torch.nn.utils.clip_grad_norm_(self.generative_model.forward_rate.parameters(), self.config.trainer.clip_max_norm)
-
-        self.optimizer.step()
 
         #if self.do_ema:
         #    self.generative_model.forward_rate.update_ema()
@@ -92,9 +91,15 @@ class PredictionTrainer(Trainer):
 
         return loss
 
-    def test_step(self, current_model, databatch, number_of_test_step,epoch):
+    def test_step(self, model, databatch, number_of_test_step,epoch):
         """
         Defines a single test step.
         To be implemented by subclasses.
         """
-        pass
+        x,y = databatch
+
+        output = model(x)  # Forward pass: compute the output
+        loss = self.criterion(output, y)  # Compute the loss
+        self.writer.add_scalar('training loss', loss.item(), number_of_test_step)
+
+        return loss
