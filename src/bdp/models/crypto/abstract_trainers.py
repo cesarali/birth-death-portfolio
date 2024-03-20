@@ -1,3 +1,4 @@
+import json
 import torch
 from torch import nn
 import torch.optim as optim
@@ -12,7 +13,7 @@ from bdp.models.crypto.prediction.configuration_classes.experiment_classes impor
 import numpy as np
 from typing import List,Union,Tuple
 from abc import ABC,abstractmethod
-from dataclasses import dataclass,field
+from dataclasses import dataclass,field,asdict
 from tqdm import tqdm
 
 @dataclass
@@ -86,7 +87,8 @@ class Trainer(ABC):
         self.writer = SummaryWriter(experiment.experiment_files.tensorboard_path)
         self.tqdm_object = tqdm(range(self.config.TrainingParameters.num_epochs))
         self.best_metric = np.inf
-
+        self.number_of_epochs = experiment.config.TrainingParameters.num_epochs
+        
     @abstractmethod
     def train_step(self, current_model, databatch, number_of_training_step,epoch):
         """
@@ -132,6 +134,8 @@ class Trainer(ABC):
 
         #CREATE FOLDER REQUIRED TO STORE EVERYTHING
         experiment.experiment_files.create_directories()
+        with open(experiment.experiment_files.config_path, 'w') as file:
+            json.dump(asdict(experiment.config), file, indent=4)
 
         # INITIATE LOSS
         self.initialize_(experiment)
@@ -168,7 +172,7 @@ class Trainer(ABC):
             # EVALUATES METRICS TO STOP
             else:
                 if epoch > self.config.TrainingParameters.save_model_metrics_warming:
-                    all_metrics = log_metrics(self.model, all_metrics=all_metrics, epoch="best",writer=self.writer)
+                    all_metrics = log_metrics(model, all_metrics=all_metrics, epoch="best",writer=self.writer)
 
             training_state.set_average_test_loss()
             results_,all_metrics = self.global_test(training_state,all_metrics,epoch)

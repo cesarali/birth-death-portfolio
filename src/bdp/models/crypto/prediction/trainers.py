@@ -1,4 +1,5 @@
 import os
+import json
 import torch
 from torch import nn
 import torch.optim as optim
@@ -16,7 +17,7 @@ import numpy as np
 from tqdm import tqdm
 from typing import List,Union,Tuple
 from abc import ABC,abstractmethod
-from dataclasses import dataclass,field
+from dataclasses import dataclass,field,asdict
 from bdp.models.crypto.abstract_trainers import Trainer
 
 
@@ -33,7 +34,7 @@ class PredictionTrainer(Trainer):
         """
         Initializes the training process.
         To be implemented by subclasses.
-        """
+        """        
         model = experiment.prediction_model
         if isinstance(model.past_encoder,LSTMModel):
             self.pack_sentences = True
@@ -79,13 +80,13 @@ class PredictionTrainer(Trainer):
         if self.config.TrainingParameters.clip_grad:
             torch.nn.utils.clip_grad_norm_(model.parameters(), self.config.TrainingParameters.clip_max_norm)
         
-        self.optimizer.step()  # Perform a single optimization step (parameter update)
-
         #if self.do_ema:
         #    self.generative_model.forward_rate.update_ema()
 
         #if self.config.trainer.lr_decay:
         #    self.scheduler.step()
+            
+        self.optimizer.step()  # Perform a single optimization step (parameter update)
 
         self.writer.add_scalar('training loss', loss.item(), number_of_training_step)
 
@@ -100,6 +101,6 @@ class PredictionTrainer(Trainer):
 
         output = model(x)  # Forward pass: compute the output
         loss = self.criterion(output, y)  # Compute the loss
-        self.writer.add_scalar('training loss', loss.item(), number_of_test_step)
+        self.writer.add_scalar('test loss', loss.item(), number_of_test_step)
 
         return loss

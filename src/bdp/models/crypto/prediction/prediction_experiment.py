@@ -1,4 +1,5 @@
 import yaml
+import json
 import torch
 from pathlib import Path
 from dataclasses import asdict
@@ -13,7 +14,7 @@ from bdp.data.crypto.coingecko.dataloaders import (
 
 from bdp.utils.config_file_operations import dynamic_load_config_from_yaml
 from bdp.models.crypto.prediction.configuration_classes.experiment_classes import ExperimentFiles
-from bdp.models.crypto.prediction.configuration_classes.prediction_classes import SummaryPredictionConfig
+from bdp.models.crypto.prediction.configuration_classes.prediction_classes import SummaryPredictionConfig,load_dataclass_from_dict
 
 class SummaryPredictionExperiment:
     """
@@ -46,11 +47,18 @@ class SummaryPredictionExperiment:
         self.dataloader = TimeSeriesDataLoader(self.config)
         
     def get_from_experiment(self,experiment_dir:Path|str=None):
+
         """
         reads results in folder
         """
-        return None
-    
+        self.experiment_files = ExperimentFiles(
+            experiment_dir=experiment_dir
+        )
+        with open(self.experiment_files.config_path, 'r') as file:
+            config_dict = json.load(file)
 
+        self.config = load_dataclass_from_dict(SummaryPredictionConfig,config_dict)
 
-
+        results = self.experiment_files.load_results()
+        self.prediction_model = results["model"]
+        self.dataloader = TimeSeriesDataLoader(self.config)

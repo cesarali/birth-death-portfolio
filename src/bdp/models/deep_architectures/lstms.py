@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
+from bdp.data.crypto.coingecko.downloads import AllCoinsMetadata
 from bdp.data.crypto.coingecko.downloads import (
-    get_df_timeserieses,
-    metadataLists
+    get_df_timeserieses
 )
 
 from bdp.data.crypto.coingecko.dataloaders import (
@@ -40,6 +40,6 @@ class LSTModel(nn.Module):
 
     if __name__=="__main__":
         date_string = "2024-03-13"
-        metadata_lists:metadataLists = metadataLists(date_string=date_string) # all metadata objects from files
+        metadata_lists:AllCoinsMetadata = AllCoinsMetadata(date_string=date_string) # all metadata objects from files
         torch_data:TimeSeriesTorchForTraining
         torch_data = torch.load(metadata_lists.torch_pathdir)

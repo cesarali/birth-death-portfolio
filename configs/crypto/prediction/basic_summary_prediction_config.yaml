@@ -12,34 +12,33 @@ PredictionModel:
     input_dim: 4
     hidden_dim: 10
     layer_num: 1
-    output_dim: 4 
+    output_dim: 25 
 
   PredictionHead:
     class_name: MLPRegressionHead
-    input_dim: 4 # same as encoder output
-    hidden_dims: [10, 10]
-    output_dim: 30
+    input_dim: 25 # same as encoder output
+    hidden_dims: [200]
+    output_dim: 27
 
 TrainingParameters:
   learning_rate: 0.001
-  num_epochs: 100
+  num_epochs: 50
   debug: true
 
   clip_grad: true
-  clip_max_norm: 10.
+  clip_max_norm: 1.
 
-  save_model_epochs: 2
+  save_model_epochs: 10
   save_model_metrics_stopping: false
   save_model_metrics_warming: false
   warm_up_best_model_epoch: 10
-  number_of_epochs: 100
   save_model_test_stopping: true
 
   metric_to_save:
     - null
 
 DataLoaderParameters:
-  data_dir: C:\Users\cesar\Desktop\Projects\BirthDeathPortafolioChoice\Codes\birth-death-portfolio\data\raw\uniswap\2024-03-13\
+  data_dir: C:\Users\cesar\Desktop\Projects\BirthDeathPortafolioChoice\Codes\birth-death-portfolio\data\raw\uniswap\2024-03-19\
   batch_size: 64
   shuffle: True
   num_workers: 4

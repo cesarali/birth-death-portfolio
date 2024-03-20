@@ -1,9 +1,8 @@
-
-from dataclasses import dataclass
-from typing import Dict, List
 import torch
-from torch.utils.data import DataLoader, TensorDataset,random_split
 from pathlib import Path
+from typing import Dict, List
+from dataclasses import dataclass
+from torch.utils.data import DataLoader, TensorDataset,random_split
 from bdp.models.crypto.prediction.configuration_classes.prediction_classes import SummaryPredictionConfig
 
 @dataclass
@@ -21,13 +20,14 @@ class TimeSeriesTorchForTraining:
     prediction_padded_sequences: torch.Tensor = None
 
     prediction_summary: torch.Tensor = None
+    prediction_keys:List[str] = None
 
 
 def read_data(data_dir:Path|str)->TimeSeriesTorchForTraining:
     """
     data_path dir where all the data (including metadata and .csv files is located)
     """
-    if isinstance(data_dir,dict):
+    if isinstance(data_dir,str):
         data_dir = Path(data_dir)
     torch_path_dir = data_dir / "preprocess_data_torch.tr"
     torch_data = torch.load(torch_path_dir)

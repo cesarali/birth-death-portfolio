@@ -41,11 +41,13 @@ class SummaryPredictionModel(nn.Module):
     
     def loss_criterion(self,output,target):
         # Mask valid (non-nan) target values
-        mask = ~torch.isnan(target)
-    
+        where_nan = torch.isnan(target)
+        where_inf = torch.isinf(target)
+        where_number = torch.logical_and(~where_nan , ~where_inf)
+
         # Apply the mask to select non-missing values in both output and target
-        output_valid = output[mask]
-        target_valid = target[mask]
+        output_valid = output[where_number]
+        target_valid = target[where_number]
     
         # Compute MSE loss on non-missing values
         loss = (output_valid - target_valid).pow(2).mean()
