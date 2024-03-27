@@ -4,6 +4,7 @@ ExperimentMetaData:
   experiment_name: SummaryPrediction
   experiment_type: Basic
   experiment_indentifier: null
+  results_dir: C:\Users\cesar\Desktop\Projects\
 
 PredictionModel:
   class_name: SummaryPredictionModel
@@ -24,7 +25,8 @@ TrainingParameters:
   learning_rate: 0.001
   num_epochs: 3
   debug: true
-
+  device: "cuda:0"
+  
   clip_grad: true
   clip_max_norm: 1.
 

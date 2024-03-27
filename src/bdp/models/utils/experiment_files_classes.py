@@ -20,7 +20,7 @@ def get_git_revisions_hash():
 #    hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD^']))
     return hashes
 
-def get_experiment_dir(experiment_name, experiment_type, experiment_indentifier, experiment_dir=None):
+def get_experiment_dir(experiment_name, experiment_type, experiment_indentifier, experiment_dir=None, projects_results_dir=None):
     """
     if experiment_dir is None:
         experiment_dir := projects_results_dir/experiment_name/experiment_type/experiment_indentifier/
@@ -28,7 +28,9 @@ def get_experiment_dir(experiment_name, experiment_type, experiment_indentifier,
     :return:
     """
     if experiment_dir is None:
-        projects_results_dir = str(results_path)
+        if projects_results_dir is None:
+            projects_results_dir = str(results_path)
+
         if experiment_indentifier is None:
             experiment_indentifier = str(int(time.time()))
 
@@ -45,6 +47,7 @@ class ExperimentFiles:
         experiment_dir := projects_results_dir/experiment_name/experiment_type/experiment_indentifier/
 
     """
+
     projects_results_dir:str = str(results_path)
 
     experiment_indentifier:str = None
@@ -62,11 +65,16 @@ class ExperimentFiles:
     delete:bool = False
 
     def __post_init__(self):
+        if self.projects_results_dir is None:
+            self.projects_results_dir = str(results_path)
+
         self.experiment_indentifier,self.experiment_dir = get_experiment_dir(
             self.experiment_name,
             self.experiment_type,
             self.experiment_indentifier,
-            self.experiment_dir)
+            self.experiment_dir,
+            projects_results_dir=self.projects_results_dir)
+        
         hash_revisions = get_git_revisions_hash()
         if len(hash_revisions) > 0:
             self.current_git_commit = str(hash_revisions[0])

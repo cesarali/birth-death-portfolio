@@ -49,7 +49,8 @@ class SummaryPredictionExperiment:
         self.experiment_files = ExperimentFiles(
             experiment_name=self.config.ExperimentMetaData.experiment_name,
             experiment_type=self.config.ExperimentMetaData.experiment_type,
-            experiment_indentifier=self.config.ExperimentMetaData.experiment_indentifier
+            experiment_indentifier=self.config.ExperimentMetaData.experiment_indentifier,
+            projects_results_dir=self.config.ExperimentMetaData.results_dir,
         )
         self.prediction_model = SummaryPredictionModel(self.config)
         self.dataloader = TimeSeriesDataLoader(self.config)

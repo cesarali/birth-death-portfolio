@@ -38,7 +38,7 @@ class TrainingParameters:
     learning_rate: float
     num_epochs: int
     device:str
-    
+
     debug: bool = True
     metric_to_save:List[str] = None
     save_model_epochs: int = 2
@@ -67,6 +67,7 @@ class ExperimentMetaData:
     experiment_name:str = None
     experiment_type:str= None
     experiment_indentifier: Optional[str] = None
+    results_dir:str = None
     
 @dataclass
 class SummaryPredictionConfig:
