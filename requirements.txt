@@ -10,3 +10,6 @@ beautifulsoup4
 jax
 gpytorch
 torchsde
+optuna
+plotly
+kaleido

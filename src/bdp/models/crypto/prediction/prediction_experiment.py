@@ -13,7 +13,7 @@ from bdp.data.crypto.coingecko.dataloaders import (
 )
 
 from bdp.utils.config_file_operations import dynamic_load_config_from_yaml
-from bdp.models.crypto.prediction.configuration_classes.experiment_classes import ExperimentFiles
+from bdp.models.utils.experiment_files_classes import ExperimentFiles
 from bdp.models.crypto.prediction.configuration_classes.prediction_classes import SummaryPredictionConfig,load_dataclass_from_dict
 
 class SummaryPredictionExperiment:
@@ -25,19 +25,27 @@ class SummaryPredictionExperiment:
     config: SummaryPredictionConfig = None
     experiment_files: ExperimentFiles = None
 
-    def __init__(self,config_path:Path|str=None,experiment_dir:Path|str=None):
+    def __init__(self,config:SummaryPredictionConfig=None,config_path:Path|str=None,experiment_dir:Path|str=None):
         if experiment_dir is not None:
             self.get_from_experiment(experiment_dir)
-        elif config_path is not None:
-            self.get_from_config(config_path)
         else:
-            print("No Config or Experiment")
+            if config is not None:
+                self.get_from_config(config)
+            elif config_path is not None:
+                config = dynamic_load_config_from_yaml(config_path)
+                self.get_from_config(config)
+            else:
+                print("No Config or Experiment")
 
-    def get_from_config(self,config_path):
+    def get_from_config(self,config:SummaryPredictionConfig):
         """
         reads yaml file
         """
-        self.config = dynamic_load_config_from_yaml(config_path)
+        if isinstance(config,SummaryPredictionConfig):
+            self.config = config
+        else:
+            raise Exception("Wrong Config Class for Summary Prediction Experiment")
+        
         self.experiment_files = ExperimentFiles(
             experiment_name=self.config.ExperimentMetaData.experiment_name,
             experiment_type=self.config.ExperimentMetaData.experiment_type,

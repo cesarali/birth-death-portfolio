@@ -20,7 +20,6 @@ from abc import ABC,abstractmethod
 from dataclasses import dataclass,field,asdict
 from bdp.models.crypto.abstract_trainers import Trainer
 
-
 class PredictionTrainer(Trainer):
     """
     """
@@ -41,6 +40,7 @@ class PredictionTrainer(Trainer):
         # Loss function and optimizer
         self.criterion = experiment.prediction_model.loss_criterion
         self.optimizer = optim.Adam(model.parameters(), lr=experiment.config.TrainingParameters.learning_rate)
+        self.experiment_class = SummaryPredictionExperiment
 
     def preprocess_data(self, databatch):
         """
@@ -98,7 +98,6 @@ class PredictionTrainer(Trainer):
         To be implemented by subclasses.
         """
         x,y = databatch
-
         output = model(x)  # Forward pass: compute the output
         loss = self.criterion(output, y)  # Compute the loss
         self.writer.add_scalar('test loss', loss.item(), number_of_test_step)

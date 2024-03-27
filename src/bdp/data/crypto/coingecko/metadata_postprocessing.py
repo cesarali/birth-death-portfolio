@@ -1,9 +1,9 @@
 import pandas as pd
-from bdp.data.crypto.coingecko.coingecko_dataclasses import PriceChangeData
 from typing import List
 from typing import Union, Dict
+from bdp.data.crypto.coingecko.coingecko_dataclasses import PriceChangeData,CoinMetadata
 
-def price_change_data_to_dataframe(data_list: List[PriceChangeData] | Dict[str,PriceChangeData]) -> pd.DataFrame:
+def get_all_metadata_dataframe(data_list: List[PriceChangeData|CoinMetadata] | Dict[str,Union[PriceChangeData|CoinMetadata]]) -> pd.DataFrame:
     if isinstance(data_list,dict):
         data_list = list(data_list.values())
     # Convert the list of PriceChangeData instances to a list of dictionaries.
@@ -12,5 +12,4 @@ def price_change_data_to_dataframe(data_list: List[PriceChangeData] | Dict[str,P
     
     # Create a pandas DataFrame from the list of dictionaries.
     df = pd.DataFrame(data_dicts)
-    
     return df

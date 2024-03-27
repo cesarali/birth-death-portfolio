@@ -8,7 +8,7 @@ from bdp.models.crypto.prediction.prediction_models import SummaryPredictionMode
 from bdp.models.crypto.prediction.prediction_experiment import SummaryPredictionExperiment
 from bdp.models.crypto.prediction.configuration_classes.prediction_classes import SummaryPredictionConfig
 from bdp.models.crypto.prediction.metrics.metrics_utils import log_metrics
-from bdp.models.crypto.prediction.configuration_classes.experiment_classes import ExperimentFiles
+from bdp.models.utils.experiment_files_classes import ExperimentFiles
 
 import numpy as np
 from typing import List,Union,Tuple
@@ -200,11 +200,11 @@ class Trainer(ABC):
         #=====================================================
         # BEST MODEL IS READ AND METRICS ARE STORED
         #=====================================================
-        #experiment_dir = experiment.experiment_files.experiment_dir
-        #if self.saved:
-        #    self.model = self.generative_model_class(experiment_dir=experiment_dir)
-        #all_metrics = log_metrics(self.model, all_metrics=all_metrics, epoch="best", writer=self.writer)
-        #self.writer.close()
+        experiment_dir = experiment.experiment_files.experiment_dir
+        if self.saved:
+            experiment = self.experiment_class(experiment_dir=experiment_dir)
+        all_metrics = log_metrics(experiment, all_metrics=all_metrics, epoch="best", writer=self.writer)
+        self.writer.close()
 
         return results_,all_metrics
 

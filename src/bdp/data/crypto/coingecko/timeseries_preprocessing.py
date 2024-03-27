@@ -20,21 +20,23 @@ from bdp.data.crypto.coingecko.coingecko_dataclasses import PriceChangeData
 
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
-from bdp.data.crypto.coingecko.metadata_postprocessing import price_change_data_to_dataframe
+from bdp.data.crypto.coingecko.metadata_postprocessing import get_all_metadata_dataframe
 from bdp.data.crypto.coingecko.downloads import get_coins_to_download
 from bdp.data.crypto.coingecko.coingecko_dataclasses import AllCoinsMetadata
+
+from dataclasses import dataclass
+from typing import Optional
+from pandas import Timestamp
+
+from bdp.data.crypto.coingecko.timeseries_utils import geometric_brownian_motion_ml_estimate
+
+from dataclasses import dataclass,asdict
 
 def read_csv(ts_coin_pathdir):
     ts = pd.read_csv(ts_coin_pathdir, index_col=0)  # Use the first column as the index
     # Convert the index back to datetime format since it's read as a string by default
     ts.index = pd.to_datetime(ts.index)
     return ts
-
-from dataclasses import dataclass
-from typing import Optional
-from pandas import Timestamp
-
-from dataclasses import dataclass,asdict
 
 @dataclass
 class PredictionSummary:
@@ -79,6 +81,9 @@ class PredictionSummary:
     total_volumes_max_end_spread:float
     total_volumes_end_past_percentage:float
     total_volumes_after_max_min_predicted:float
+
+    prediction_returns:float
+    prediction_volatility:float
 
 @dataclass
 class CoinTimeseriesMetadata:
@@ -267,6 +272,9 @@ def preprocess_timeseries_dataframe(ts:pd.DataFrame,coin_id:str)->CoinTimeseries
     past_body = ts[ts.index < time_10_before]
     prediction_head = ts[time_10_before <= ts.index]
 
+    prediction_head_prices = prediction_head["prices"].values
+    prediction_returns,prediction_volatility = geometric_brownian_motion_ml_estimate(prediction_head_prices)
+
     if len(past_body) > len(prediction_head) and len(prediction_head) > 10:
 
         max_values,max_indices,past_body,prediction_head = normalize(past_body,prediction_head)
@@ -282,6 +290,7 @@ def preprocess_timeseries_dataframe(ts:pd.DataFrame,coin_id:str)->CoinTimeseries
 
         #prediction head
         prediction_head_summary = summarize_prediction_head_dataframe(prediction_head,past_body)
+        prediction_head_summary.update({"prediction_returns":prediction_returns,"prediction_volatility":prediction_volatility})
         prediction_head_summary = PredictionSummary(**prediction_head_summary)
         
         #check values available
@@ -319,24 +328,23 @@ def valid_values_for_dataframe(values):
         return False
     return True
     
-def timeseries_metadata_to_dataframe(data_list: List[CoinTimeseriesMetadata] | Dict[str,CoinTimeseriesMetadata]) -> pd.DataFrame:
+def get_all_timeseries_dataframe(data_dict=Dict[str,CoinTimeseriesMetadata]) -> pd.DataFrame:
     """
     we create a data frame with the statistics of all the time series metadata
     """
-    if isinstance(data_list,dict):
-        data_list = list(data_list.values())
     # Convert the list of PriceChangeData instances to a list of dictionaries.
     # Each dictionary represents the attributes of a PriceChangeData instance.
     data_dicts = []
-    for data_instance in data_list:
-         vars_tsmd = {k:v for k,v in vars(data_instance).items() if valid_values_for_dataframe(v)}
-         vars_tsmd.update(vars(data_instance.prediction_summary))
-         data_dicts.append(vars_tsmd)
+    for coin_id,data_instance in data_dict.items():
+         if data_instance is not None:
+             vars_tsmd = {k:v for k,v in vars(data_instance).items() if valid_values_for_dataframe(v)}
+             vars_tsmd.update(vars(data_instance.prediction_summary))
+             data_dicts.append(vars_tsmd)
     # Create a pandas DataFrame from the list of dictionaries.
     df = pd.DataFrame(data_dicts)
     return df
 
-def timeseries_and_metadata(coin_metadata:AllCoinsMetadata)->Dict[str,CoinTimeseriesMetadata]:
+def get_timeseries_as_metadata(coin_metadata:AllCoinsMetadata)->Dict[str,CoinTimeseriesMetadata]:
     """
     we create a dictionary with all the coins timeseries stored with its metadata as a dataclass object
     """
@@ -446,7 +454,7 @@ if __name__=="__main__":
 
     #===============================================================
     # ALL TIME SERIES DOWNLOAD 
-    all_coins_timeseries = timeseries_and_metadata(all_coins_metadata) # dict of all timeseries metadata with ts
+    all_coins_timeseries = get_timeseries_as_metadata(all_coins_metadata) # dict of all timeseries metadata with ts
     
     #===============================================================
     # CREATE TORCH

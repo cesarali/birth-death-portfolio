@@ -9,7 +9,7 @@ from bdp.data.crypto.coingecko.downloads import (
 
 from bdp.data.crypto.coingecko.timeseries_preprocessing import (
     get_df_timeserieses,
-    timeseries_and_metadata,
+    get_timeseries_as_metadata,
     get_timeseries_as_torch
 )
 

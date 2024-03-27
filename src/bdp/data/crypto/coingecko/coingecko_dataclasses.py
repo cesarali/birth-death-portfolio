@@ -20,7 +20,6 @@ from bdp.data.crypto.coingecko.downloads import (
 
 from bdp.data.crypto.coingecko.utils import parse_raw_prices_to_dataframe
 
-
 @dataclass
 class PriceChangeData:
     """
@@ -365,7 +364,7 @@ class AllCoinsMetadata:
 
 if __name__=="__main__":
     coingecko_key = "CG-rkg4RTUcfEWYAQ4xUejxPpkS"
-    date_string=None
+    date_string="2024-03-19"
 
     selected_coins = get_coins_to_download(date_string=None,key=coingecko_key,number_of_coins_to_download=3000,percentage_on_top = .1,number_of_pages=4,redo=False)
     all_coins_metadata = AllCoinsMetadata(date_string=date_string,coingecko_key=coingecko_key)
