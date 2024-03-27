@@ -28,19 +28,26 @@ class PredictionTrainer(Trainer):
     def __init__(self,config:SummaryPredictionConfig):
         super().__init__()
         self.config = config
-    
+        if torch.cuda.is_available():
+            self.device = torch.device(self.config.TrainingParameters.device)
+        else:
+            self.device = torch.device("cpu")
+
     def initialize(self,experiment:SummaryPredictionExperiment):
         """
         Initializes the training process.
         To be implemented by subclasses.
         """        
         model = experiment.prediction_model
+        model.to(self.device)
+
         if isinstance(model.past_encoder,LSTMModel):
             self.pack_sentences = True
         # Loss function and optimizer
         self.criterion = experiment.prediction_model.loss_criterion
         self.optimizer = optim.Adam(model.parameters(), lr=experiment.config.TrainingParameters.learning_rate)
         self.experiment_class = SummaryPredictionExperiment
+        
 
     def preprocess_data(self, databatch):
         """
@@ -52,13 +59,14 @@ class PredictionTrainer(Trainer):
          2: 'past_added_sequences',
          3: 'lengths_past',
          4: 'prediction_summary'}
-
         """
         past_padded = databatch[2]
         lengths = databatch[3]
         y = databatch[4]
         if self.pack_sentences:
             x = pack_padded_sequence(past_padded, lengths, batch_first=True, enforce_sorted=False)
+        x = x.to(self.device)
+        y = y.to(self.device)
         return x.float(),y.float()
 
     def get_model(self):
@@ -87,7 +95,6 @@ class PredictionTrainer(Trainer):
         #    self.scheduler.step()
             
         self.optimizer.step()  # Perform a single optimization step (parameter update)
-
         self.writer.add_scalar('training loss', loss.item(), number_of_training_step)
 
         return loss

@@ -24,7 +24,7 @@ TrainingParameters:
   learning_rate: 0.001
   num_epochs: 3
   debug: true
-
+  device: cuda0
   clip_grad: true
   clip_max_norm: 1.
 

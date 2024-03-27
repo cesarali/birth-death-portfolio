@@ -11,7 +11,6 @@ from dataclasses import dataclass
 class MetricsAvailable:
     test_loss:str
 
-
 def test_loss(experiment:SummaryPredictionExperiment):
     """
     calculates the loss for the whole test data set
@@ -19,7 +18,8 @@ def test_loss(experiment:SummaryPredictionExperiment):
     dataloader = experiment.dataloader
     criterion = experiment.prediction_model.loss_criterion
     model = experiment.prediction_model
-    
+    device = next(model.parameters().__iter__()).device
+
     if isinstance(model.past_encoder,LSTMModel):
         pack_sentences = True
 
@@ -31,6 +31,9 @@ def test_loss(experiment:SummaryPredictionExperiment):
         if pack_sentences:
             x = pack_padded_sequence(past_padded, lengths, batch_first=True, enforce_sorted=False)
         x,y = x.float(),y.float()
+        x = x.to(device)
+        y = y.to(device)
+        
         output = model(x)  # Forward pass: compute the output
         loss = criterion(output, y)  # Compute the loss
         losses.append(loss.item())
