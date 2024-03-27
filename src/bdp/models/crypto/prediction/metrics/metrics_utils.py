@@ -11,7 +11,7 @@ from dataclasses import dataclass
 class MetricsAvailable:
     test_loss:str
 
-def test_loss(experiment:SummaryPredictionExperiment):
+def test_loss(experiment:SummaryPredictionExperiment,all_metrics):
     """
     calculates the loss for the whole test data set
     """
@@ -37,15 +37,19 @@ def test_loss(experiment:SummaryPredictionExperiment):
         output = model(x)  # Forward pass: compute the output
         loss = criterion(output, y)  # Compute the loss
         losses.append(loss.item())
-    losses = np.asarray(losses).mean()
-    return losses
+    losses = np.asarray(losses)
+    test_loss_mean = losses.mean()
+    test_loss_std = losses.std()
+
+    all_metrics.update({"test_loss_value":test_loss_mean,"test_loss_std":test_loss_std})
+    return all_metrics
 
 def log_metrics(experiment:SummaryPredictionExperiment, all_metrics, epoch, writer):
-    test_loss_value = test_loss(experiment)
+    all_metrics = test_loss(experiment,all_metrics)
 
     #=======================================================
     # DUMP METRICS
-    all_metrics.update({"test_loss_value":test_loss_value})
+    all_metrics.update({})
     metrics_file_path = experiment.experiment_files.metrics_file.format("test_loss_{0}".format(epoch))
     with open(metrics_file_path,"w") as f:
         json.dump(all_metrics,f)
