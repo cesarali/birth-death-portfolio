@@ -13,7 +13,10 @@ from dataclasses import dataclass, asdict
 
 def get_git_revisions_hash():
     hashes = []
-    hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD']))
+    try:
+        hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD']))
+    except:
+        pass
 #    hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD^']))
     return hashes
 
