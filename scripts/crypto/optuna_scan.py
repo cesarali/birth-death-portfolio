@@ -63,6 +63,8 @@ class SummaryPredictionScanOptuna:
         #...scan experiments
         self.basic_config_file = basic_config_file
         self.config = dynamic_load_config_from_yaml(self.basic_config_file)
+        if not (self.config.ExperimentMetaData.results_dir is None):
+            results_path = Path(self.config.ExperimentMetaData.results_dir)
 
         self.workdir = results_path / self.config.ExperimentMetaData.experiment_name / self.config.ExperimentMetaData.experiment_type
         self.device = device

@@ -2,9 +2,9 @@ ExperimentMetaData:
   name: "Simple Prediction Model"
   experiment_dir: null # if null then defined from name, type and identifier
   experiment_name: SummaryPrediction
-  experiment_type: Optuna
+  experiment_type: Basic
   experiment_indentifier: null
-  results_dir: C:\Users\cesar\Desktop\Projects\
+  results_dir: ./drive/MyDrive/Crypto/Experiments/
 
 PredictionModel:
   class_name: SummaryPredictionModel
@@ -25,11 +25,12 @@ TrainingParameters:
   learning_rate: 0.001
   num_epochs: 3
   debug: true
-  device: cuda:0
+  device: "cuda:0"
+  
   clip_grad: true
   clip_max_norm: 1.
 
-  save_model_epochs: 2
+  save_model_epochs: 10
   save_model_metrics_stopping: false
   save_model_metrics_warming: false
   warm_up_best_model_epoch: 10
@@ -39,7 +40,7 @@ TrainingParameters:
     - null
 
 DataLoaderParameters:
-  data_dir: C:\Users\cesar\Desktop\Projects\BirthDeathPortafolioChoice\Codes\birth-death-portfolio\data\raw\uniswap\2024-03-19\
+  data_dir: ./drive/MyDrive/Crypto/Data/2024-03-19/
   batch_size: 64
   shuffle: True
   num_workers: 4
